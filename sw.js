@@ -1,5 +1,5 @@
 // Offline cache. Bump VERSION whenever a cached file changes.
-const VERSION = "duftfinder-v2";
+const VERSION = "duftfinder-v3";
 const FILES = [
   "./", "./index.html", "./app.js", "./engine.js", "./perfumes.js", "./bottle.js", "./manifest.webmanifest",
   "./vendor/gsap.min.js", "./vendor/Flip.min.js",
@@ -19,13 +19,16 @@ self.addEventListener("activate", (e) => {
   );
 });
 
-// Network first for the page itself (so updates arrive), cache first for everything else.
+// Network first for everything, so a new deploy is used right away; the cache is only the offline fallback.
 self.addEventListener("fetch", (e) => {
   const req = e.request;
   if (req.method !== "GET" || new URL(req.url).origin !== location.origin) return;
-  if (req.mode === "navigate") {
-    e.respondWith(fetch(req).catch(() => caches.match("./index.html")));
-    return;
-  }
-  e.respondWith(caches.match(req).then((hit) => hit || fetch(req)));
+  e.respondWith(
+    fetch(req)
+      .then((res) => {
+        if (res.ok) caches.open(VERSION).then((c) => c.put(req, res.clone()));
+        return res.clone();
+      })
+      .catch(() => caches.match(req).then((hit) => hit || (req.mode === "navigate" ? caches.match("./index.html") : Response.error()))),
+  );
 });
