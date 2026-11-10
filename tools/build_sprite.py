@@ -9,7 +9,7 @@ import sys
 
 ICONS = ["search", "sparkles", "sun", "snowflake", "leaf", "cloud-sun", "moon", "briefcase", "heart",
          "dumbbell", "coffee", "plus", "check", "x", "star", "trash-2", "download", "upload", "shuffle",
-         "wind", "compass"]
+         "wind", "compass", "camera"]
 
 src = pathlib.Path(sys.argv[1])
 root = pathlib.Path(__file__).resolve().parent.parent

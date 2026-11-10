@@ -1,7 +1,8 @@
 // Offline cache. Bump VERSION whenever a cached file changes.
-const VERSION = "duftfinder-v1";
+const VERSION = "duftfinder-v2";
 const FILES = [
-  "./", "./index.html", "./app.js", "./engine.js", "./perfumes.js", "./manifest.webmanifest",
+  "./", "./index.html", "./app.js", "./engine.js", "./perfumes.js", "./bottle.js", "./manifest.webmanifest",
+  "./vendor/gsap.min.js", "./vendor/Flip.min.js",
   "./fonts/instrument-serif-latin-400-normal.woff2", "./fonts/instrument-serif-latin-400-italic.woff2",
   "./fonts/inter-tight-latin-400-normal.woff2", "./fonts/inter-tight-latin-500-normal.woff2",
   "./fonts/inter-tight-latin-600-normal.woff2", "./icons/icon-192.png",
