@@ -1,0 +1,53 @@
+name: test-and-deploy
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Unit tests
+        run: npm test
+      - name: Every icon used in app.js exists in the sprite
+        run: |
+          used=$(grep -o 'icon("[a-z0-9-]*"' app.js | sed 's/icon("//;s/"//' | sort -u)
+          for i in $used; do grep -q "id=\"i-$i\"" index.html || { echo "missing icon: $i"; exit 1; }; done
+          echo "all $(echo "$used" | wc -w) icons present"
+      - name: Every file the service worker caches exists
+        run: |
+          grep -o '"\./[^"]*"' sw.js | tr -d '"' | grep -v '^\./$' | while read -r f; do test -f "$f" || { echo "missing: $f"; exit 1; }; done
+
+  deploy:
+    if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
+    needs: test
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Collect site files
+        run: |
+          mkdir _site
+          cp -r index.html app.js engine.js perfumes.js sw.js manifest.webmanifest fonts icons _site/
+      - uses: actions/configure-pages@v5
+      - uses: actions/upload-pages-artifact@v3
+      - id: deployment
+        uses: actions/deploy-pages@v4
